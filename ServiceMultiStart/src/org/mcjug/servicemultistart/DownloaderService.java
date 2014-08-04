@@ -19,7 +19,6 @@ public class DownloaderService extends Service {
 	public static final String NOTIFICATION = "DownloaderServiceBroadcast";
 	private static final String RESULT = "result";
 
-	//private NotificationManager mNotificationManager;
 	static final SimpleDateFormat sdf = new SimpleDateFormat(" > yyyy-M-dd hh:mm:ss <", Locale.US);
 	private Date mDate;
 	
@@ -59,16 +58,16 @@ public class DownloaderService extends Service {
 		new Thread(new Runnable() {
 			   public void run() {
 				   result = Activity.RESULT_OK;
-				   publishResults (getTicker(), result);
+				   publishResults (getServiceTicker(), result);
 			   }
 		}).start();
 	}
 
 	private int tickerNumber = 0;
 
-	private String getTicker () {
+	private String getServiceTicker () {
 		tickerNumber++;
-		Log.v(TAG, "DownloaderService getTicker " + tickerNumber);
+		Log.v(TAG, "DownloaderService Ticker " + tickerNumber);
 		String currentTimeString = new SimpleDateFormat("> HH:mm", Locale.US).format(new Date());
 		return ("SRV" + tickerNumber + currentTimeString);
 	}

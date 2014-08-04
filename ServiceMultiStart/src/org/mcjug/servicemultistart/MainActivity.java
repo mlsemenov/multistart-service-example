@@ -71,7 +71,6 @@ public class MainActivity extends Activity {
 					receivedBroadcastMessage = "LOADEDSTRING not found";
 				}
 				Log.v(TAG, "LocalBroadcastReceiver onReceive broadcastResult: " + receivedBroadcastMessage);
-				// finish();
 		  }
 		};
 	
@@ -99,11 +98,24 @@ public class MainActivity extends Activity {
 		addListenerOnCheckboxBoot();
 		addListenerOnCheckboxAppLoad();
 		
-		Log.v(TAG, "broadcastReceiver initialized: " + receivedBroadcastMessage + "/" + config.serviceMode.name());
+        if (config.isCheckboxAppLoadChecked()) {
+        	if((config.serviceMode.getServiceRunMode() > 0)) {
+            	initiateScheduleReceiver();
+            	Log.v(TAG, "onCreate: scheduleReceiver registered");        		
+        	}
+        	else {
+        		// If RUN_ONCE run downloader service once
+        		startService(new Intent(this, DownloaderService.class));
+        		
+    			Log.v(TAG, "onCreate: run DownloaderService once");
+        	}
+        }
+		
+		Log.v(TAG, "onCreate broadcastReceiver initialized: " + receivedBroadcastMessage + "/" + config.serviceMode.name());
 		updateTicker(receivedBroadcastMessage);
 		handler.postDelayed (runnableTicker, 1000);
-		
-		
+		// Show that the message is not fresh:
+		receivedBroadcastMessage += "_";
 	}
 
 	@Override
@@ -111,11 +123,9 @@ public class MainActivity extends Activity {
         super.onResume();
         registerReceiver(localReceiver, new IntentFilter(DownloaderService.NOTIFICATION));	
         Log.v(TAG, "onResume: localBroadcastReceiver registered");
-        
+        // && !config.isActiveScheduleReceiver()
         if (config.isCheckboxAppLoadChecked() && (config.serviceMode.getServiceRunMode() > 0)) {
-        	scheduleReceiver = new ScheduleReceiver(); 
-        	//new IntentFilter(Intent.ACTION_CONFIGURATION_CHANGED)
-        	registerReceiver (scheduleReceiver, new IntentFilter(DownloaderService.NOTIFICATION));
+        	initiateScheduleReceiver();
         	Log.v(TAG, "onResume: scheduleReceiver registered");
         }
     }
@@ -165,11 +175,18 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
+	private void initiateScheduleReceiver () {
+		scheduleReceiver = new ScheduleReceiver(); 
+    	registerReceiver (scheduleReceiver, new IntentFilter(ScheduleReceiver.NOTIFICATION));
+		Intent intent = new Intent(ScheduleReceiver.NOTIFICATION);
+		sendBroadcast(intent);
+	}
+	
 	public void onRadioButtonClicked(View v) {
 	    RadioButton button = (RadioButton) v;
 	    switch(button.getId()) {
 	    	case R.id.radioOnClick:
-	    		config.serviceMode = Config.ServiceRunModes.ON_CLICK;
+	    		config.serviceMode = Config.ServiceRunModes.RUN_ONCE;
 	    		addNote("Run service on Click");
 	    		break;
 	    	case R.id.radioOneMin:
@@ -186,8 +203,16 @@ public class MainActivity extends Activity {
 	}
 	
 	public void onButtonStartClick(View v) {
-		Log.v(TAG, "onButtonStartClick");
-		startService(new Intent(this, DownloaderService.class));
+		
+		if (config.serviceMode != Config.ServiceRunModes.RUN_ONCE && !config.isActiveScheduleReceiver()) {
+			initiateScheduleReceiver();
+			Log.v(TAG, "onButtonStartClick -- ScheduleReceiver ");
+		}
+		else {
+			startService(new Intent(this, DownloaderService.class));
+			Log.v(TAG, "onButtonStartClick -- DownloaderService");
+		}
+		
 		doBindService();
 	}
 	
@@ -197,7 +222,6 @@ public class MainActivity extends Activity {
 	}
 	
 	public void onButtonInfoClick (View v) {
-		startService(new Intent(this, DownloaderService.class));
 		addNote (receivedBroadcastMessage);
 	}
 	
@@ -216,6 +240,11 @@ public class MainActivity extends Activity {
 		  // updateTicker(broadcastReceiver.getBroadcastResult());
 		   updateTicker(receivedBroadcastMessage);
 	      handler.postDelayed(this, 10000);
+	      if (receivedBroadcastMessage.length() < 40)
+	    	  receivedBroadcastMessage += ".";
+	      else {
+	    	  receivedBroadcastMessage = receivedBroadcastMessage.substring(0, receivedBroadcastMessage.indexOf(".."));
+	      }
 	   }
 	};
 

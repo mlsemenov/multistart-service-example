@@ -12,11 +12,14 @@ public final class Config {
 	static final String cbBootName = "checkBoxBoot";
 	static final String cbLoadAppName = "checkBoxAppLoad";
 	static final String radioServiceRunMode = "radioServiceRunMode";
-	private boolean mCheckboxBootIsChecked, mCheckboxAppLoadIsChecked;  
+	private boolean mCheckboxBootIsChecked, mCheckboxAppLoadIsChecked;
+	private boolean activeScheduleReceiver;
+	
+	
 	public static final String LOADEDSTRING = "loadedString";
 	
 	public enum ServiceRunModes {
-		ON_CLICK(0), ONE_MIN(1), FIVE_MIN(5);
+		RUN_ONCE(0), ONE_MIN(1), FIVE_MIN(5);
 		
 		private final int mMode;
 		
@@ -27,7 +30,6 @@ public final class Config {
 		public int getServiceRunMode() {
 			return mMode;
 		}
-		
 	}
 	
 	public ServiceRunModes serviceMode;
@@ -54,6 +56,14 @@ public final class Config {
 
 	public void setCheckboxAppLoadChecked(boolean isChecked) {
 		this.mCheckboxAppLoadIsChecked = isChecked;
+	}
+
+	public boolean isActiveScheduleReceiver() {
+		return activeScheduleReceiver;
+	}
+
+	public void setActiveScheduleReceiver(boolean activeScheduleReceiver) {
+		this.activeScheduleReceiver = activeScheduleReceiver;
 	}
 
 	Config(Context context) {
@@ -83,7 +93,7 @@ public final class Config {
 		mCheckboxAppLoadIsChecked = preferences.getBoolean(cbLoadAppName, false);
 		int modeValue =  preferences.getInt(radioServiceRunMode, 1);
 		switch (modeValue) {
-			case 0: serviceMode = ServiceRunModes.ON_CLICK; break;	
+			case 0: serviceMode = ServiceRunModes.RUN_ONCE; break;	
 			case 1: serviceMode = ServiceRunModes.ONE_MIN; break;
 			default: serviceMode = ServiceRunModes.FIVE_MIN; break;
 		}

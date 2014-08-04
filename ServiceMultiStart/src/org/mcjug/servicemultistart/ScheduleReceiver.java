@@ -11,6 +11,7 @@ import java.util.Calendar;
 
 public class ScheduleReceiver extends BroadcastReceiver {
 
+	public static final String NOTIFICATION = "ScheduleReceiverBroadcast";
 	static final String TAG = "ScheduleReceiver";
 	private Config config;
 	
@@ -18,8 +19,10 @@ public class ScheduleReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		
 		config = new Config (context);
-		if ((config.isCheckboxAppLoadChecked() || config.isCheckboxBootChecked()) && (config.serviceMode.getServiceRunMode() > 0)) {
+		//if (config.isCheckboxAppLoadChecked() || config.isCheckboxBootChecked() || (config.serviceMode.getServiceRunMode() > 0)) {
+		if (config.serviceMode.getServiceRunMode() > 0) {
 			
+			config.setActiveScheduleReceiver(true);
 			Intent intentStartServiceReceiver = new Intent(context, StartServiceReceiver.class);
 
 			PendingIntent pending = PendingIntent.getBroadcast(context, 0, intentStartServiceReceiver, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -33,10 +36,12 @@ public class ScheduleReceiver extends BroadcastReceiver {
 			// fetch every REPEAT_TIME seconds. InexactRepeating allows Android to optimize the energy consumption
 			alarmManagerService.setInexactRepeating(AlarmManager.RTC_WAKEUP, boot_time.getTimeInMillis(), repeatTime, pending);
 
-			Log.v(TAG, "ScheduleReceiver fired, service started "  + config.isCheckboxBootChecked() + "/"+ config.isCheckboxAppLoadChecked());
+			Log.v(TAG, "ScheduleReceiver fired, service started "  + 
+					config.isCheckboxBootChecked() + "/"+ config.isCheckboxAppLoadChecked() + "/" + config.serviceMode);
 			
 		}
 		else {
+			config.setActiveScheduleReceiver(false);
 			Log.v(TAG, "ScheduleReceiver fired, not configured to init service ");
 		}
 		
