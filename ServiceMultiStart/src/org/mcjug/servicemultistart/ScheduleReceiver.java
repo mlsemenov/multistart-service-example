@@ -13,12 +13,12 @@ public class ScheduleReceiver extends BroadcastReceiver {
 
 	public static final String NOTIFICATION = "ScheduleReceiverBroadcast";
 	static final String TAG = "ScheduleReceiver";
-	private Config config;
+	private ServiceConfig config;
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		
-		config = new Config (context);
+		config = new ServiceConfig (context);
 		//if (config.isCheckboxAppLoadChecked() || config.isCheckboxBootChecked() || (config.serviceMode.getServiceRunMode() > 0)) {
 		if (config.serviceMode.getServiceRunMode() > 0) {
 			

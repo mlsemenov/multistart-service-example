@@ -11,11 +11,11 @@ import android.util.Log;
 public class StartServiceReceiver  extends BroadcastReceiver {
 
 	static final String TAG = "StartServiceReceiver";
-	private Config config;
+	private ServiceConfig config;
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		config = new Config (context);
+		config = new ServiceConfig (context);
 		
 		// Always start service - it may be a click once or a scheduled event 
 		Intent downloaderService = new Intent(context, DownloaderService.class);

@@ -6,7 +6,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.CheckBox;
 
-public final class Config {
+public final class ServiceConfig {
 
 	static final String TAG = "MainActivity";
 	static final String cbBootName = "checkBoxBoot";
@@ -66,11 +66,11 @@ public final class Config {
 		this.activeScheduleReceiver = activeScheduleReceiver;
 	}
 
-	Config(Context context) {
+	ServiceConfig(Context context) {
 		loadConfig(context);
 	}
 	
-	Config(CheckBox checkboxBoot,CheckBox checkboxAppLoad, ServiceRunModes serviceRunMode) {
+	ServiceConfig(CheckBox checkboxBoot,CheckBox checkboxAppLoad, ServiceRunModes serviceRunMode) {
 		this.mCheckboxBootIsChecked = checkboxBoot.isChecked();
 		this.mCheckboxAppLoadIsChecked = checkboxAppLoad.isChecked();
 		serviceMode = serviceRunMode;

@@ -79,7 +79,7 @@ public class DownloaderService extends Service {
 	private void publishResults(String loadedMessage, int result) {
 		Log.v(TAG, "DownloaderService publishResults");
 		Intent intent = new Intent(NOTIFICATION);
-		intent.putExtra(Config.LOADEDSTRING, loadedMessage);
+		intent.putExtra(ServiceConfig.LOADEDSTRING, loadedMessage);
 		intent.putExtra(RESULT, result);
 		sendBroadcast(intent);
 	}

@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
 
 	static final String TAG = "MainActivity";
 	private CheckBox mCheckboxBoot, mCheckboxAppLoad;
-	private Config config;
+	private ServiceConfig config;
 	
 	//private IntentFilter filter = new IntentFilter(Intent.ACTION_CONFIGURATION_CHANGED);
 	private ScheduleReceiver scheduleReceiver;
@@ -64,8 +64,8 @@ public class MainActivity extends Activity {
 		  public void onReceive(Context context, Intent intent) {
 			  Log.v(TAG, "LocalBroadcastReceiver onReceive: Broadcast intent detected " + intent.getAction());
 				// broadcastResult = intent.getAction();
-				if (intent.hasExtra(Config.LOADEDSTRING)) {
-					receivedBroadcastMessage = intent.getExtras().getString(Config.LOADEDSTRING);
+				if (intent.hasExtra(ServiceConfig.LOADEDSTRING)) {
+					receivedBroadcastMessage = intent.getExtras().getString(ServiceConfig.LOADEDSTRING);
 		        }
 				else {
 					receivedBroadcastMessage = "LOADEDSTRING not found";
@@ -78,7 +78,7 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		config = new Config (getApplicationContext());
+		config = new ServiceConfig (getApplicationContext());
 		
 		RadioButton radioButton;
     	switch (config.serviceMode.getServiceRunMode()) {
@@ -186,15 +186,15 @@ public class MainActivity extends Activity {
 	    RadioButton button = (RadioButton) v;
 	    switch(button.getId()) {
 	    	case R.id.radioOnClick:
-	    		config.serviceMode = Config.ServiceRunModes.RUN_ONCE;
+	    		config.serviceMode = ServiceConfig.ServiceRunModes.RUN_ONCE;
 	    		addNote("Run service on Click");
 	    		break;
 	    	case R.id.radioOneMin:
-	    		config.serviceMode = Config.ServiceRunModes.ONE_MIN;
+	    		config.serviceMode = ServiceConfig.ServiceRunModes.ONE_MIN;
 	    		addNote("Run service every minute");
 	    		break;
 	    	default:
-	    		config.serviceMode = Config.ServiceRunModes.FIVE_MIN;
+	    		config.serviceMode = ServiceConfig.ServiceRunModes.FIVE_MIN;
 	    		addNote("Run service every five minute");
 	    		break;
 	    }
@@ -204,7 +204,7 @@ public class MainActivity extends Activity {
 	
 	public void onButtonStartClick(View v) {
 		
-		if (config.serviceMode != Config.ServiceRunModes.RUN_ONCE && !config.isActiveScheduleReceiver()) {
+		if (config.serviceMode != ServiceConfig.ServiceRunModes.RUN_ONCE && !config.isActiveScheduleReceiver()) {
 			initiateScheduleReceiver();
 			Log.v(TAG, "onButtonStartClick -- ScheduleReceiver ");
 		}
