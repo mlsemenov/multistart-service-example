@@ -1,7 +1,7 @@
 package org.mcjug.schedulerservice;
 
 import org.mcjug.maininterface.R;
-import org.mcjug.internetreadservice.SimpleMessage;
+import org.mcjug.jsonobjects.SimpleMessage;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

@@ -1,6 +1,6 @@
 package org.mcjug.maininterface;
 
-import org.mcjug.internetreadservice.SimpleMessage;
+import org.mcjug.jsonobjects.SimpleMessage;
 import org.mcjug.schedulerservice.DownloaderService;
 import org.mcjug.schedulerservice.ServiceConfig;
 import org.mcjug.schedulerservice.ServiceHandler;

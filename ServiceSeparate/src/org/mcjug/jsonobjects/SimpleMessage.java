@@ -1,4 +1,4 @@
-package org.mcjug.internetreadservice;
+package org.mcjug.jsonobjects;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
