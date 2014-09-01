@@ -158,16 +158,26 @@
         android:onClick="onButtonConfigureClick"
         android:src="@drawable/actionsconfigureicon64x64" />
     
+     <Button android:id="@+id/buttonSelectMode"
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content"
+        android:text="@string/alert_dialog_mode_choice"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/imageButtonStart"
+        android:onClick="onButtonSelectModeClick"
+            /> 
+     
     <TextView
         android:id="@+id/textViewNote"
         android:layout_width="wrap_content"
-        android:layout_height="200dp"
-        android:layout_below="@+id/imageButtonStart"
+        android:layout_height="150dp"
+        android:layout_below="@+id/buttonSelectMode"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
         android:maxLines="10"
         android:scrollbars="vertical"
         android:text="@string/empty_line" />
+    
 
     <TextView 
         android:id="@+id/textViewTicker"

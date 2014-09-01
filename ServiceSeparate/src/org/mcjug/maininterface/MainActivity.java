@@ -1,11 +1,14 @@
 package org.mcjug.maininterface;
 
-import org.mcjug.jsonobjects.SimpleMessage;
+import org.mcjug.jsonobjects.*;
 import org.mcjug.schedulerservice.DownloaderService;
 import org.mcjug.schedulerservice.ServiceConfig;
 import org.mcjug.schedulerservice.ServiceHandler;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,70 +19,18 @@ import android.view.View.OnClickListener;
 import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.TextView;
-//import android.content.BroadcastReceiver;
-//import android.content.IntentFilter;
 
 public class MainActivity extends Activity {
 
 	static final String TAG = "MainActivity";
+	private static final int DIALOG_MODE_CHOICE = 1;
+	
 	private CheckBox mCheckboxBoot, mCheckboxAppLoad;
 	private ServiceConfig config;
 	
 	//private ScheduleReceiver scheduleReceiver;
 	private ServiceHandler serviceHandler;
-	
-	/*
-	@SuppressWarnings("unused")
-	private DownloaderService mBoundService;
-	private ServiceConnection mConnection = new ServiceConnection() {
-	    public void onServiceConnected(ComponentName className, IBinder service) {
-	    	Log.v(TAG, "MainActivity onServiceConnected");
-	    	mBoundService = ((DownloaderService.ServiceBinder)service).getService();
-	    }
-	    public void onServiceDisconnected(ComponentName className) {
-	        mBoundService = null;
-	    }
-	};
-	
-	
-	boolean mIsBound = false;
-	void doBindService() {
-		Intent intent = new Intent(this, DownloaderService.class);
-	    bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-	    mIsBound = true;
-	}
-	
-	void doUnbindService() {
-	    if (mIsBound) {
-	        unbindService(mConnection);
-	        mIsBound = false;
-	    }
-	}
-*/
-	
-
-	/*
-	 * 
-	 *
-	private String receivedMessage = " ? ";
-
-	private BroadcastReceiver localReceiver = new BroadcastReceiver() {
-		  @Override
-		  public void onReceive(Context context, Intent intent) {
-			  Log.v(TAG, "LocalBroadcastReceiver onReceive: Broadcast intent detected " + intent.getAction());
-				// broadcastResult = intent.getAction();
-				if (intent.hasExtra(ServiceConfig.LOADEDSTRING)) {
-					receivedBroadcastMessage = intent.getExtras().getString(ServiceConfig.LOADEDSTRING);
-		        }
-				else {
-					receivedBroadcastMessage = "LOADEDSTRING not found";
-				}
-				Log.v(TAG, "LocalBroadcastReceiver onReceive broadcastResult: " + receivedBroadcastMessage);
-		  }
-		};
-	
-	*/
-	
+		
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -105,14 +56,20 @@ public class MainActivity extends Activity {
 		addListenerOnCheckboxBoot();
 		addListenerOnCheckboxAppLoad();
 		
-		serviceHandler = new ServiceHandler(getApplicationContext());
+		if (config.getHandlerDataSourceType() == null) {
+			config.setHandlerDataSourceType(ServiceConfig.DataSourceTypes.SIMPLE_MESSAGE);
+		}
+		
+		serviceHandler = new ServiceHandler(getApplicationContext(), config.getHandlerDataSourceType());
         if (config.isCheckboxAppLoadChecked()) {
         	if((config.serviceMode.getServiceRunMode() > 0)) {
             	initiateScheduler();
         	}
         	else {
         		// If RUN_ONCE run downloader service once
-        		startService(new Intent(this, DownloaderService.class));
+        		Intent intent = new Intent(this, DownloaderService.class);
+        		intent.putExtra("URL", config.getURL());
+        		startService(intent);
     			Log.v(TAG, "onCreate: run DownloaderService once");
         	}
         }
@@ -162,7 +119,6 @@ public class MainActivity extends Activity {
 		super.onDestroy();
 	}
 
-
 	
     public void addListenerOnCheckboxBoot () {
    	 	mCheckboxBoot.setOnClickListener(new OnClickListener() {
@@ -195,20 +151,6 @@ public class MainActivity extends Activity {
 	private void initiateScheduler () {
 		serviceHandler.startScheduler();
 	}
-
-	/*
-	private void unRegisterScheduleReceiver () {
-		serviceHandler.unRegisterScheduleReceiver();
-		if (scheduleReceiver != null) {
-			if (scheduleReceiver.isRegistered) {
-				Log.v(TAG, "unRegisterReceiver ScheduleReceiver");
-	        	unregisterReceiver(scheduleReceiver);	
-			}
-			else
-				Log.v(TAG, "unRegisterReceiver ScheduleReceiver is not possible");
-        }
-	}
-	  */
 	
 	public void onRadioButtonClicked(View v) {
 	    RadioButton button = (RadioButton) v;
@@ -238,7 +180,7 @@ public class MainActivity extends Activity {
 		}
 		else {
 			//startService(new Intent(this, DownloaderService.class));
-			serviceHandler.startServiceOnce();
+			serviceHandler.startServiceOnce(config.getURL());
 			Log.v(TAG, "onButtonStartClick -- DownloaderService");
 		}
 		
@@ -252,19 +194,70 @@ public class MainActivity extends Activity {
 	}
 	
 	public void onButtonInfoClick (View v) {
-		SimpleMessage sm = serviceHandler.getSimpleMessage();
-		if (sm == null) {
-			addNote ("Broadcast Message: " + serviceHandler.getReceivedBroadcastMessage());	
+		if (config.getHandlerDataSourceType() == ServiceConfig.DataSourceTypes.SIMPLE_MESSAGE ) {
+			SimpleMessage sm = serviceHandler.getSimpleMessage();
+			if (sm == null) {
+				addNote ("Broadcast Message: " + serviceHandler.getReceivedBroadcastMessage());	
+			}
+			else {
+				addNote ("Broadcast Simple Message: " + sm.toString());
+			}			
+		}
+		else if (config.getHandlerDataSourceType() == ServiceConfig.DataSourceTypes.AA_MEETING) {
+			Meetings mtg = serviceHandler.getMeetings();
+			if (mtg == null) {
+				addNote ("Broadcast Message: " + serviceHandler.getReceivedBroadcastMessage());
+			}
+			else {
+				addNote ("Broadcast AA Message: " + mtg.toString());
+			}
 		}
 		else {
-			addNote ("Broadcast Simple Message: " + sm.toString());
+			MeetingTypes mtgTypes = serviceHandler.getMeetingTypes();
+			if (mtgTypes == null) {
+				addNote ("Broadcast Message: " + serviceHandler.getReceivedBroadcastMessage());
+			}
+			else {
+				addNote ("Broadcast AA Message Type: " + mtgTypes.toString());
+			}
 		}
-		
 	}
 	
 	public void onButtonConfigureClick(View v) {
 		//saveConfig();
     	config.saveConfig(getApplicationContext());
+	}
+	
+    @Override
+    protected Dialog onCreateDialog(int id) {
+    	return new AlertDialog.Builder(MainActivity.this)
+        //.setIconAttribute(android.R.attr.alertDialogIcon)
+        .setTitle(R.string.alert_dialog_mode_choice)
+        .setSingleChoiceItems (R.array.select_mode_items, config.getHandlerDataSourceTypeInt(), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            	Log.v(TAG, "Alert Radio Button Clicked : " + whichButton);
+            }
+        })
+        .setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            	dialog.dismiss();
+                int selectedTypeValue = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
+                config.setHandlerDataSourceType(selectedTypeValue);
+                serviceHandler.setSelectedServiceType(config.getHandlerDataSourceType());
+            	Log.v(TAG, "Alert Screen - user clicked Yes, set " + config.getHandlerDataSourceType());
+            }
+        })
+        .setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+              	Log.v(TAG, "Alert Screen - user clicked No : " + whichButton);
+            }
+        })
+       .create();
+    }
+    
+	@SuppressWarnings("deprecation")
+	public void onButtonSelectModeClick (View v) {
+		showDialog(DIALOG_MODE_CHOICE);
 	}
 	
 	

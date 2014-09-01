@@ -19,6 +19,7 @@ public class StartServiceReceiver  extends BroadcastReceiver {
 		
 		// Always start service - it may be a click once or a scheduled event 
 		Intent downloaderService = new Intent(context, org.mcjug.schedulerservice.DownloaderService.class);
+		downloaderService.putExtra("URL", config.getURL());
 		context.startService(downloaderService);
 		
 		if (config.serviceMode.getServiceRunMode() == 0) {

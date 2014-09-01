@@ -31,7 +31,6 @@ public class DownloaderService extends Service {
 		mDate = new Date();
 		Log.v(TAG, "DownloaderService onCreate:" + sdf.format(mDate));
 		result = Activity.RESULT_OK;
-		//publishResults("starting service", result);
 	}
 
 	@Override
@@ -67,8 +66,6 @@ public class DownloaderService extends Service {
 		}
 	}
 	/***************** End of Bind section *********************/
-
-
 	
 	protected void handleIntent(final Intent intent) {
 		new Thread(new Runnable() {
@@ -77,19 +74,22 @@ public class DownloaderService extends Service {
 				   result = Activity.RESULT_OK;
 				   publishResults (getServiceTicker(), result);
 				   *******/
-				   result = readXMLdata();
+				   if (intent.getExtras() != null) {
+					   String targetUrl = intent.getStringExtra("URL");
+					   Log.v(TAG, "DownloaderService handleIntent get URL" + targetUrl);
+					   result = readXMLdata(targetUrl);   
+				   }
 			   }
 		}).start();
 	}
 
-	private int readXMLdata() {
+	private int readXMLdata(String targetUrl) {
 
 		int readingResult = Activity.RESULT_CANCELED;
 		StringBuilder sb = new StringBuilder();
 		InputStream stream = null;
 		try {
-
-			URL url = new URL(ServiceConfig.URL);
+			URL url = new URL(targetUrl);
 			stream = url.openConnection().getInputStream();
 			InputStreamReader reader = new InputStreamReader(stream);
 

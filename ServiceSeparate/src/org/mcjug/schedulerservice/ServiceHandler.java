@@ -1,7 +1,8 @@
 package org.mcjug.schedulerservice;
 
 import org.mcjug.maininterface.R;
-import org.mcjug.jsonobjects.SimpleMessage;
+import org.mcjug.schedulerservice.ServiceConfig.DataSourceTypes;
+import org.mcjug.jsonobjects.*;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,8 +29,75 @@ public class ServiceHandler {
 	private int previous_result = Activity.RESULT_CANCELED;
 	private String jsonSource;
 	private SimpleMessage simpleMessage;
+	private Meetings meetingsMessage;
+	private MeetingTypes meetingTypes;
+	private DataSourceTypes selectedServiceType;
+	
+	public void setSelectedServiceType(DataSourceTypes selectedServiceType) {
+		this.selectedServiceType = selectedServiceType;
+	}
 
+	/************  SimpleMessage handlers *************/
+	private SimpleMessage processServerMessage (String messageJson) {
+		if (messageJson.length() > 0) {
+			Log.v(TAG, "processing " + messageJson);
+			GsonBuilder gsonBuilder = new GsonBuilder();
+			gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+			Gson gson = gsonBuilder.create();
+			SimpleMessage sm = gson.fromJson(messageJson, SimpleMessage.class);
+			return (sm);			
+		}
+		return null;
+	}
+	
+	public SimpleMessage getSimpleMessage() {
+		return simpleMessage;
+	}
+
+	/************  Meetings handlers *************/
+	
+	private Meetings processMeetings (String messageJson) {
+		if (messageJson.length() > 0) {
+			Log.v(TAG, "processing " + messageJson);
+			GsonBuilder gsonBuilder = new GsonBuilder();
+			gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+			Gson gson = gsonBuilder.create();
+			Meetings msg = gson.fromJson(messageJson, Meetings.class);
+			return (msg);			
+		}
+		return null;		
+	}
+	
+	public Meetings getMeetings () {
+		return meetingsMessage;
+	}
+	
+	/************  Meeting Types handlers *************/
+	
+	private MeetingTypes processMeetingTypes (String messageJson) {
+		if (messageJson.length() > 0) {
+			Log.v(TAG, "processing " + messageJson);
+			GsonBuilder gsonBuilder = new GsonBuilder();
+			gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+			Gson gson = gsonBuilder.create();
+			MeetingTypes msg = gson.fromJson(messageJson, MeetingTypes.class);
+			return (msg);			
+		}
+		return null;		
+	}
+	
+	public MeetingTypes getMeetingTypes () {
+		return meetingTypes;
+	}
+
+	
+	/************  Service handlers *************/
 	public ServiceHandler (Context context) {
+		this.context = context;
+	}
+
+	public ServiceHandler (Context context, ServiceConfig.DataSourceTypes sourceType) {
+		selectedServiceType = sourceType;
 		this.context = context;
 	}
 	
@@ -45,12 +113,12 @@ public class ServiceHandler {
 		if (scheduleReceiver != null) {
 			if (scheduleReceiver.isRegistered) {
 				Log.v(TAG, "unRegisterReceiver ScheduleReceiver");
-				context.unregisterReceiver(scheduleReceiver);	
+				if (scheduleReceiver != null)
+					context.unregisterReceiver(scheduleReceiver);	
 			}
 			else
 				Log.v(TAG, "unRegisterReceiver ScheduleReceiver is not possible");
         }
-		
 	}
 	
 	public String getReceivedBroadcastMessage() {
@@ -71,10 +139,21 @@ public class ServiceHandler {
 			Log.v(TAG, "Handler's Receiver onReceive: Broadcast intent detected " + intent.getAction());
 
 			if (intent.hasExtra(ServiceConfig.LOADEDSTRING)) {
-				// receivedBroadcastMessage = intent.getExtras().getString(ServiceConfig.LOADEDSTRING);
 				jsonSource = intent.getExtras().getString(ServiceConfig.LOADEDSTRING);
-				simpleMessage = processServerMessage(jsonSource);
-				receivedBroadcastMessage = simpleMessage.firstShortMessage();
+				
+				if (selectedServiceType == ServiceConfig.DataSourceTypes.SIMPLE_MESSAGE) {
+					simpleMessage = processServerMessage(jsonSource);
+					receivedBroadcastMessage = simpleMessage.firstShortMessage();	
+				}
+				else if (selectedServiceType == ServiceConfig.DataSourceTypes.AA_MEETING) {
+					meetingsMessage = processMeetings(jsonSource);
+					receivedBroadcastMessage = meetingsMessage.firstShortMessage();
+				}
+				else {
+					meetingTypes = processMeetingTypes(jsonSource);
+					receivedBroadcastMessage = meetingTypes.firstShortMessage();
+				}
+					
 				if (previous_result == Activity.RESULT_CANCELED) {
 					int current_result = intent.getExtras().getInt(ServiceConfig.RESULT);
 					if (current_result != previous_result) {
@@ -96,24 +175,10 @@ public class ServiceHandler {
 		}
 	};
 	
-	private SimpleMessage processServerMessage (String messageJson) {
-		if (messageJson.length() > 0) {
-			Log.v(TAG, "processing " + messageJson);
-			GsonBuilder gsonBuilder = new GsonBuilder();
-			gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-			Gson gson = gsonBuilder.create();
-			SimpleMessage sm = gson.fromJson(messageJson, SimpleMessage.class);
-			return (sm);			
-		}
-		return null;
-	}
-	
-	public SimpleMessage getSimpleMessage() {
-		return simpleMessage;
-	}
-	
-	public void startServiceOnce () {
+
+	public void startServiceOnce (String url) {
 		Intent downloaderService = new Intent(context, DownloaderService.class);
+		downloaderService.putExtra("URL", url);
 		context.startService(downloaderService);
 	}
 	

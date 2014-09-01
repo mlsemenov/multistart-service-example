@@ -40,9 +40,7 @@ public class ScheduleReceiver extends BroadcastReceiver {
 			Log.v(TAG, "org.mcjug.schedulerservice.ScheduleReceiver fired, service started "  + 
 					config.isCheckboxBootChecked() + "/"+ config.isCheckboxAppLoadChecked() + "/" + config.serviceMode +
 					" repeatTime " + repeatTime );
-			
 			isRegistered = true;
-			
 		}
 		else {
 			config.setActiveScheduleReceiver(false);

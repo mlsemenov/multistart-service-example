@@ -23,4 +23,8 @@
     <string name="select1min">1 min</string>
     <string name="select5min">5 min</string>
     
+    <string name="alert_dialog_mode_choice">Select Message Source</string>
+    <string name="alert_dialog_ok">OK</string>
+    <string name="alert_dialog_cancel">Cancel</string>
+    
 </resources>
