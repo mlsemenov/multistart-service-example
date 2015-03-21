@@ -1,0 +1,1 @@
+Test application which allows to start Android Service on BOOT, on APP Load or on button Click, and may restarts it after a given interval.
